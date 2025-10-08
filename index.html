@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>USDT 授权测试 - Shasta 测试网</title>
+    <title>USDT 转账测试 - Shasta</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -46,10 +46,6 @@
             background: #4CAF50;
             color: white;
         }
-        #getTestBtn {
-            background: #FF9800;
-            color: white;
-        }
         #approveBtn {
             background: #2196F3;
             color: white;
@@ -76,20 +72,19 @@
 </head>
 <body>
     <div class="container">
-        <h2>USDT 授权测试 - Shasta 测试网</h2>
+        <h2>USDT 转账测试 - Shasta 测试网</h2>
         
         <div class="network-info">
             🌐 当前网络: <strong id="networkStatus">未连接</strong>
         </div>
 
         <div class="input-group">
-            <label for="amount">授权金额 (USDT):</label>
-            <input type="number" id="amount" placeholder="输入授权金额" value="10" step="0.1">
+            <label for="amount">转账金额 (USDT):</label>
+            <input type="number" id="amount" placeholder="输入转账金额" value="10" step="0.1">
         </div>
 
         <button id="connectBtn">🔗 连接 TronLink</button>
-        <button id="getTestBtn" disabled>🪙 获取测试 USDT</button>
-        <button id="approveBtn" disabled>✅ 确认授权</button>
+        <button id="approveBtn" disabled>✅ 确认转账</button>
 
         <div id="status">请先连接钱包...</div>
     </div>
