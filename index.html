@@ -3,56 +3,26 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Tron 钱包连接与授权</title>
-  <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    button { padding: 10px 20px; margin-top: 10px; }
-    input { padding: 8px; width: 150px; }
-    #walletAddress { margin-top: 10px; font-weight: bold; }
-  </style>
+  <title>ProjectA - 钱包连接与授权</title>
 </head>
 <body>
   <h1>连接钱包并授权TRX</h1>
 
-  <button id="connectBtn">连接钱包</button>
-  <div id="walletAddress"></div>
-
-  <div style="margin-top: 20px;">
-    <label for="amountInput">输入授权TRX金额:</label>
-    <input type="number" id="amountInput" placeholder="例如 10" min="0.000001" step="0.000001" />
+  <div>
+    <button id="connectWalletBtn">连接钱包</button>
+    <p id="walletAddress">钱包未连接</p>
   </div>
 
-  <button id="authorizeBtn" disabled>授权TRX</button>
+  <div>
+    <label for="amountInput">请输入授权金额（TRX）：</label>
+    <input type="number" id="amountInput" min="0" step="0.000001" />
+  </div>
 
-  <script src="app.js"></script>
-  <script>
-    let userAddress = null;
+  <div>
+    <button id="authorizeBtn" disabled>授权TRX</button>
+  </div>
 
-    document.getElementById('connectBtn').addEventListener('click', async () => {
-      userAddress = await connectWallet();
-      if (userAddress) {
-        document.getElementById('walletAddress').textContent = '钱包地址: ' + userAddress;
-        document.getElementById('authorizeBtn').disabled = false;
-      }
-    });
-
-    document.getElementById('authorizeBtn').addEventListener('click', async () => {
-      const amountInput = document.getElementById('amountInput').value;
-      if (!amountInput || isNaN(amountInput) || Number(amountInput) <= 0) {
-        alert('请输入正确的授权金额');
-        return;
-      }
-      await authorizeTRX(amountInput);
-    });
-
-    // 初始化合约（确保tronWeb已就绪）
-    async function waitForTronWeb() {
-      while (!window.tronWeb || !window.tronWeb.ready) {
-        await new Promise(resolve => setTimeout(resolve, 100));
-      }
-      await initContract();
-    }
-    waitForTronWeb();
-  </script>
+  <script src="https://cdn.jsdelivr.net/npm/tronweb/dist/TronWeb.min.js"></script>
+  <script src="./app.js"></script>
 </body>
 </html>
