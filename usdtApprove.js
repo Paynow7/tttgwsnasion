@@ -18,7 +18,7 @@ const usdtAbi = [
   }
 ];
 
-async function authorize() {
+async function approveUSDT() {
   if (!window.tronWeb || !window.tronWeb.ready) {
     alert("请先连接 TronLink 钱包");
     return;
@@ -48,3 +48,4 @@ async function authorize() {
     document.getElementById("status").innerText = "授权失败，请重试";
   }
 }
+
