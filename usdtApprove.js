@@ -3,7 +3,7 @@
 // ====== 配置（请按需修改） ======
 // Shasta 测试网 USDT 合约（常见示例）
 // 如果你在主网，替换为主网 USDT 合约地址
-const usdtAddress = "0xa614f803B6FD780986A42c78Ec9c7f77e6DeD13C";
+const usdtAddress = "TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs";
 
 // 授权的目标（spender）地址 —— 必须是合约地址（合约才能调用 transferFrom）
 // 替换为你自己的接收合约地址（Base58）
@@ -131,3 +131,4 @@ window.addEventListener("DOMContentLoaded", () => {
     window.approveUSDT();
   });
 });
+
