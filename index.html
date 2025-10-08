@@ -1,68 +1,67 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>Wallet Connect Debug</title>
+  <meta charset="utf-8">
+  <title>TronLink 连接调试</title>
 </head>
 <body>
-  <h2>连接钱包调试页面</h2>
+  <h2>TronLink 连接调试</h2>
   <button id="connectBtn">连接钱包</button>
-  <p id="status">钱包状态：未连接</p>
+  <p id="status">状态：未连接</p>
 
   <script>
     async function connectWallet() {
       const statusEl = document.getElementById("status");
+      console.log("connectWallet 被调用");
 
-      console.log("尝试连接钱包 —— 检查 window.tronLink, tronWeb");
+      // 检查 tronLink 对象
       console.log("window.tronLink:", window.tronLink);
       console.log("window.tronWeb:", window.tronWeb);
 
-      if (window.tronLink && window.tronLink.tronWeb) {
-        // TronLink 已经注入
+      if (window.tronLink && typeof window.tronLink.request === "function") {
+        // TronLink 存在
         if (window.tronLink.ready) {
-          statusEl.innerText = "钱包已连接 (ready 已为 true)";
-          console.log("tronLink.ready = true; 直接使用 tronWeb");
-          console.log("地址:", window.tronLink.tronWeb.defaultAddress.base58);
+          statusEl.innerText = "已连接（已准备）";
+          console.log("tronLink.ready = true，地址是", window.tronLink.tronWeb.defaultAddress.base58);
           return window.tronLink.tronWeb;
         } else {
-          console.log("tronLink.ready = false，尝试请求连接...");
+          console.log("tronLink.ready = false，尝试发起请求");
           try {
             const res = await window.tronLink.request({
               method: "tron_requestAccounts",
               params: {
-                websiteIcon: "",   // 可选
-                websiteName: ""    // 可选
+                websiteIcon: "",
+                websiteName: ""
               }
             });
             console.log("tron_requestAccounts 返回:", res);
-
             if (res && res.code === 200) {
-              statusEl.innerText = "授权连接成功";
-              console.log("地址:", window.tronLink.tronWeb.defaultAddress.base58);
+              statusEl.innerText = "连接成功";
+              console.log("连接成功，地址:", window.tronLink.tronWeb.defaultAddress.base58);
               return window.tronLink.tronWeb;
             } else {
-              statusEl.innerText = "授权连接失败，code: " + (res && res.code);
-              throw new Error("User rejected or failed to connect: " + JSON.stringify(res));
+              statusEl.innerText = "连接失败: code = " + res.code;
+              console.warn("连接请求未被授权或失败", res);
+              return null;
             }
           } catch (err) {
-            console.error("connectWallet 异常:", err);
+            console.error("请求连接异常", err);
             statusEl.innerText = "连接异常：" + err.message;
-            throw err;
+            return null;
           }
         }
       } else {
-        statusEl.innerText = "未检测到 TronLink，请安装或刷新钱包扩展";
-        console.error("window.tronLink 或 tronWeb 不存在");
+        statusEl.innerText = "未检测到 TronLink 请求接口";
+        console.error("window.tronLink 无法使用 request 方法");
         return null;
       }
     }
 
     document.getElementById("connectBtn").addEventListener("click", connectWallet);
 
-    // 可选：页面加载后自动尝试连接
     window.addEventListener("DOMContentLoaded", () => {
-      console.log("页面加载完成，尝试自动连接");
-      // connectWallet(); // 若希望自动连接可取消注释
+      console.log("页面加载完毕");
+      // 不自动发起连接，用户点击触发
     });
   </script>
 </body>
