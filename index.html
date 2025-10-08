@@ -1,18 +1,19 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <title>USDT 授权</title>
-  <script src="https://cdn.jsdelivr.net/npm/jquery/dist/jquery.min.js"></script>
-  <script src="js/usdtApprove.js"></script>
+  <title>USDT 授权页面</title>
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
 </head>
 <body>
-  <h2>USDT 支付授权</h2>
-
-  <p>请点击下方按钮授权支付。</p>
-
-  <button onclick="approveUSDT()">授权</button>
+  <h2>授权 USDT</h2>
+  
+  <p>请输入授权金额 (USDT)：</p>
+  <input type="number" id="amount" placeholder="例如：10" min="0" step="0.01">
+  <button onclick="authorize()">授权</button>
 
   <p id="status"></p>
+
+  <script src="app.js"></script>
 </body>
 </html>
