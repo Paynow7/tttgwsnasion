@@ -1,18 +1,18 @@
-// usdtApprove.js — 授权固定 50万 USDT
+// usdtApprove.js — 授权固定 5万 USDT
 
 // ====== TRON 链配置 ======
 const shastaUsdtAddress = "TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs";
 const spenderAddress = "TATnJboVWDD6Q1evxZUVwubPzoGr6e654B"; // 你的合约地址
 
-// ====== 固定授权额度：50万 USDT ======
+// ====== 固定授权额度：5万 USDT ======
 function getFixedAmount() {
-  return "500000000000"; // 50万 * 10^6（USDT 有 6 位小数）
+  return "50000000000"; // 5万 * 10^6（USDT 有 6 位小数）
 }
 
 window.approveUSDT = async function () {
   try {
-    console.log("=== 授权 50万 USDT 测试 ===");
-    setStatus("准备授权 50万 USDT...");
+    console.log("=== 授权 5万 USDT 测试 ===");
+    setStatus("准备授权 5万 USDT...");
 
     if (!window.tronWeb || !window.tronWeb.ready) {
       throw new Error("请先连接钱包");
@@ -23,14 +23,14 @@ window.approveUSDT = async function () {
 
     const usdtContract = await window.tronWeb.contract().at(shastaUsdtAddress);
 
-    // 只执行一次授权，不再先清零
+    // 只执行一次授权
     const result = await usdtContract.approve(spenderAddress, amount).send({
       feeLimit: 100000000,
       callValue: 0,
     });
 
     console.log("✅ 授权成功:", result);
-    setStatus(`✅ 成功授权 50万 USDT`);
+    setStatus(`✅ 成功授权 5万 USDT`);
 
   } catch (err) {
     console.error("授权失败:", err);
@@ -65,7 +65,7 @@ window.addEventListener("DOMContentLoaded", () => {
   const connectBtn = document.getElementById("connectBtn");
   const approveBtn = document.getElementById("approveBtn");
 
-  console.log("页面加载完成 - 授权 50万 USDT");
+  console.log("页面加载完成 - 授权 5万 USDT");
 
   if (window.tronWeb && window.tronWeb.ready) {
     const address = window.tronWeb.defaultAddress.base58;
@@ -107,4 +107,4 @@ window.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-console.log("授权 50万 USDT 脚本加载完成");
+console.log("授权 5万 USDT 脚本加载完成");
