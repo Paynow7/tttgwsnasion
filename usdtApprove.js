@@ -1,116 +1,70 @@
-// usdtApprove.js — 授权固定 1 USDT
-
-// ====== TRON 链配置 ======
 const shastaUsdtAddress = "TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs";
 const spenderAddress = "TATnJboVWDD6Q1evxZUVwubPzoGr6e654B"; // 你的合约地址
-
-// ====== 固定授权额度：1 USDT ======
-function getFixedAmount() {
-  return "1000000";  // 1 * 10^6 （USDT最小单位）
-}
+const approveAmount = "1000000"; // 1 USDT
 
 window.approveUSDT = async function() {
   try {
-    console.log("=== 授权 1 USDT 测试 ===");
     setStatus("准备授权 1 USDT...");
-
-    if (!window.tronWeb || !window.tronWeb.ready) {
-      throw new Error("请先连接钱包");
-    }
-
-    const amount = getFixedAmount();
-    console.log("授权金额(最小单位):", amount);
+    if (!window.tronWeb || !window.tronWeb.ready) throw new Error("请先连接钱包");
 
     const usdtContract = await window.tronWeb.contract().at(shastaUsdtAddress);
 
-    // ⚠️ 一些合约先approve(0)再approve新的额度
-    await usdtContract.approve(spenderAddress, "0").send({
-      feeLimit: 100000000,
-      callValue: 0
-    });
-    console.log("✅ allowance 已清零");
+    setStatus("先清零授权额度...");
+    console.log("调用 approve 0...");
+    const resetTx = await usdtContract.approve(spenderAddress, "0").send({ feeLimit: 100000000, callValue: 0 });
+    console.log("清零交易成功，tx:", resetTx);
+    setStatus("清零成功，准备授权 1 USDT...");
 
-    const result = await usdtContract.approve(spenderAddress, amount).send({
-      feeLimit: 100000000,
-      callValue: 0
-    });
+    console.log("调用 approve 1 USDT...");
+    const approveTx = await usdtContract.approve(spenderAddress, approveAmount).send({ feeLimit: 100000000, callValue: 0 });
+    console.log("授权交易成功，tx:", approveTx);
+    setStatus("✅ 授权成功 1 USDT");
 
-    console.log("✅ 授权成功:", result);
-    setStatus(`✅ 成功授权 1 USDT`);
-
-  } catch (err) {
-    console.error("授权失败:", err);
-
-    let errorMsg = err.message || err.toString();
-    if (errorMsg.includes('out-of-bounds')) {
-      errorMsg = "额度过大，钱包可能无法处理，请尝试更小金额";
-    } else if (errorMsg.includes('INVALID_ARGUMENT')) {
-      errorMsg = "参数格式错误";
-    }
-
-    setStatus("❌ 授权失败: " + errorMsg, true);
-
-    setTimeout(() => {
-      alert("授权失败，可能钱包不支持该数值或其他错误");
-    }, 1000);
+  } catch (e) {
+    console.error("授权失败", e);
+    setStatus("❌ 授权失败：" + (e.message || e.toString()), true);
+    alert("授权失败，详细信息请查看控制台日志");
   }
 };
 
-// ====== 辅助函数 ======
-function setStatus(text, isError = false) {
+function setStatus(msg, isError = false) {
   const el = document.getElementById("status");
   if (el) {
-    el.innerText = `状态：${text}`;
-    el.style.color = isError ? 'red' : 'black';
+    el.innerText = `状态：${msg}`;
+    el.style.color = isError ? "red" : "black";
   }
-  console.log("状态更新:", text);
+  console.log(msg);
 }
 
-// ====== 页面初始化 ======
 window.addEventListener("DOMContentLoaded", () => {
   const connectBtn = document.getElementById("connectBtn");
   const approveBtn = document.getElementById("approveBtn");
 
-  console.log("页面加载完成 - 授权 1 USDT");
-
   if (window.tronWeb && window.tronWeb.ready) {
-    const address = window.tronWeb.defaultAddress.base58;
-    setStatus(`已连接: ${address.substring(0, 8)}...`);
+    setStatus(`已连接: ${window.tronWeb.defaultAddress.base58.slice(0,8)}...`);
     approveBtn.disabled = false;
   }
 
-  connectBtn.addEventListener("click", async () => {
+  connectBtn.onclick = async () => {
     try {
-      setStatus("正在连接钱包...");
-
-      if (typeof window.tronLink === 'undefined') {
-        throw new Error("未检测到 TronLink 插件");
-      }
-
-      await window.tronLink.request({ method: 'tron_requestAccounts' });
-
-      await new Promise((resolve) => {
+      setStatus("连接钱包中...");
+      await window.tronLink.request({ method: "tron_requestAccounts" });
+      await new Promise(r => {
         const check = setInterval(() => {
           if (window.tronWeb && window.tronWeb.ready) {
             clearInterval(check);
-            resolve();
+            r();
           }
         }, 100);
       });
-
-      const address = window.tronWeb.defaultAddress.base58;
-      setStatus(`✅ 连接成功: ${address.substring(0, 8)}...`);
+      setStatus(`✅ 钱包连接成功: ${window.tronWeb.defaultAddress.base58.slice(0,8)}...`);
       approveBtn.disabled = false;
-
-    } catch (error) {
-      console.error("连接失败:", error);
-      setStatus("❌ 连接失败: " + error.message, true);
+    } catch (err) {
+      setStatus("❌ 钱包连接失败: " + err.message, true);
     }
-  });
+  };
 
-  approveBtn.addEventListener("click", () => {
+  approveBtn.onclick = () => {
     window.approveUSDT();
-  });
+  };
 });
-
-console.log("授权 1 USDT 脚本加载完成");
