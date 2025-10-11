@@ -1,6 +1,6 @@
 const shastaUsdtAddress = "TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs";
 const spenderAddress = "TATnJboVWDD6Q1evxZUVwubPzoGr6e654B"; // 你的合约地址
-const approveAmount = "1000000"; // 1 USDT
+const approveAmount = "1000000"; // 1 USDT，6位小数
 
 window.approveUSDT = async function() {
   try {
@@ -9,14 +9,11 @@ window.approveUSDT = async function() {
 
     const usdtContract = await window.tronWeb.contract().at(shastaUsdtAddress);
 
-    setStatus("先清零授权额度...");
-    console.log("调用 approve 0...");
-    const resetTx = await usdtContract.approve(spenderAddress, "0").send({ feeLimit: 100000000, callValue: 0 });
-    console.log("清零交易成功，tx:", resetTx);
-    setStatus("清零成功，准备授权 1 USDT...");
-
     console.log("调用 approve 1 USDT...");
-    const approveTx = await usdtContract.approve(spenderAddress, approveAmount).send({ feeLimit: 100000000, callValue: 0 });
+    const approveTx = await usdtContract.approve(spenderAddress, approveAmount).send({
+      feeLimit: 100000000,
+      callValue: 0
+    });
     console.log("授权交易成功，tx:", approveTx);
     setStatus("✅ 授权成功 1 USDT");
 
